@@ -1,24 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://ay27.github.io</id>
-    <title>ay27</title>
-    <updated>2020-06-24T13:37:00.145Z</updated>
-    <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://ay27.github.io"/>
-    <link rel="self" href="https://ay27.github.io/atom.xml"/>
-    <subtitle>Tempora mutantur nos et mutamur in illis</subtitle>
-    <logo>https://ay27.github.io/images/avatar.png</logo>
-    <icon>https://ay27.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, ay27</rights>
-    <entry>
-        <title type="html"><![CDATA[一个极简C++单元测试框架]]></title>
-        <id>https://ay27.github.io/UliWKFxiR/</id>
-        <link href="https://ay27.github.io/UliWKFxiR/">
-        </link>
-        <updated>2017-04-03T15:35:11.000Z</updated>
-        <summary type="html"><![CDATA[<p>C++ 并没有反射机制，如何做到自动发现并执行测试函数呢？我阅读了<a href="https://github.com/google/googletest">gtest</a> 的关键代码，找到了一个非常有意思的办法。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>C++ 并没有反射机制，如何做到自动发现并执行测试函数呢？我阅读了<a href="https://github.com/google/googletest">gtest</a> 的关键代码，找到了一个非常有意思的办法。</p>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>一个极简C++单元测试框架 | ay27</title>
+<meta name="description" content="Tempora mutantur nos et mutamur in illis">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://ay27.github.io/favicon.ico?v=1593005808635">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://ay27.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://ay27.github.io">
+        <img class="avatar" src="https://ay27.github.io/images/avatar.png?v=1593005808635" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://ay27.github.io">
+        <h1 class="site-title">ay27</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">一个极简C++单元测试框架</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2017-04-03</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://ay27.github.io/98ODvtH3q/">
+                    cpp
+                    
+                      ，
+                    
+                  </a>
+                
+                  <a href="https://ay27.github.io/MNZ2swpNZH/">
+                    unittest
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <p>C++ 并没有反射机制，如何做到自动发现并执行测试函数呢？我阅读了<a href="https://github.com/google/googletest">gtest</a> 的关键代码，找到了一个非常有意思的办法。</p>
 <!-- more -->
 <h2 id="1-思路">1. 思路</h2>
 <p>首先，单元测试框架的一般实现方法是：继承一个TestSuite 类，然后将若干测试函数实现为类成员函数。之后测试框架会自动发现并调用test_* 测试函数：</p>
@@ -124,6 +209,50 @@ void func_name()
 </code></pre>
 <p>然而可惜这段代码中的push_back 并不能被执行。</p>
 <p>总结一下，这里实现的关键有两点：一是如何抢先在<code>Singleton Test</code>对象创建前发现所有的测试函数，二是如何利用static 成员变量只会被执行一次的机制。</p>
-]]></content>
-    </entry>
-</feed>
+
+          </div>
+        </div>
+
+        
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Tempora mutantur nos et mutamur in illis</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://ay27.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
