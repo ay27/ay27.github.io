@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>C++ STL 容器数据结构汇总 | ay27</title>
+<meta name="description" content="Tempora mutantur nos et mutamur in illis">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://ay27.github.io/favicon.ico?v=1595342120341">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://ay27.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://ay27.github.io">
+        <img class="avatar" src="https://ay27.github.io/images/avatar.png?v=1595342120341" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://ay27.github.io">
+        <h1 class="site-title">ay27</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="menu purple-link">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">C++ STL 容器数据结构汇总</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2020-07-21</span>
+            
+          </div>
+          <div class="post-content">
+            <p>简单整理一下各种容器数据结构。</p>
+<!-- more -->
+<table>
+<thead>
+<tr>
+<th>容器</th>
+<th>描述</th>
+<th>增加</th>
+<th>删</th>
+<th>查找</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vector</td>
+<td>顺序，数组</td>
+<td>1（扩容就要 拷贝数据）</td>
+<td>N</td>
+<td>1</td>
+</tr>
+<tr>
+<td>array</td>
+<td>大小固定的数组，不能添加删除</td>
+<td>-</td>
+<td>-</td>
+<td>1</td>
+</tr>
+<tr>
+<td>map</td>
+<td>按key排序，红黑水</td>
+<td>logn</td>
+<td>logn</td>
+<td>Logn</td>
+</tr>
+<tr>
+<td>multimap</td>
+<td>允许关键字重复</td>
+<td>logn</td>
+<td>logn</td>
+<td>logn</td>
+</tr>
+<tr>
+<td>unordered_map</td>
+<td>无序，hash table</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>unordered_multimap</td>
+<td>无序，key允许重复</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>set</td>
+<td>有序，红黑树</td>
+<td>logn</td>
+<td>logn</td>
+<td>logn</td>
+</tr>
+<tr>
+<td>multiset</td>
+<td>有序，允许重复</td>
+<td>logn</td>
+<td>logn</td>
+<td>long</td>
+</tr>
+<tr>
+<td>unordered_set</td>
+<td>无序</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>unordered_multiset</td>
+<td>无序，允许重复</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>queue</td>
+<td>单向队列，先入先出</td>
+<td>1</td>
+<td>1</td>
+<td>-</td>
+</tr>
+<tr>
+<td>deque</td>
+<td>双向队列，头尾操作</td>
+<td>1</td>
+<td>1</td>
+<td>-</td>
+</tr>
+<tr>
+<td>list</td>
+<td>双向链表，快速增删</td>
+<td>1</td>
+<td>1</td>
+<td>N</td>
+</tr>
+<tr>
+<td>priority_queue</td>
+<td>带权值的单向queue，优先级排序，实现是个堆。元素类型要定义operator&lt;</td>
+<td>logn</td>
+<td>logn</td>
+<td>1</td>
+</tr>
+<tr>
+<td>stack</td>
+<td>栈，先入后出</td>
+<td>1</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h2 id="vector">vector</h2>
+<ul>
+<li>capacity() &gt;= size()</li>
+<li>2倍方式增长，可以用 reserve() 预先开辟空间</li>
+<li>删除需要copy数据，用erase(it)</li>
+<li>emplace_back 不会调用拷贝构造函数，push_back 会拷贝</li>
+</ul>
+<h2 id="各种map">各种map</h2>
+<ul>
+<li>multimap可以在同个key上存储多个值，使用是：</li>
+</ul>
+<pre><code class="language-c++">multimap&lt;string, int&gt; cnt;
+cnt.insert(make_pair(&quot;aaa&quot;, 123));
+cnt.insert(make_pair(&quot;aaa&quot;, 1234));
+// 不能这么写
+// cnt[&quot;aaa&quot;] = 123;
+auto it = cnt.find(&quot;aaa&quot;);
+// it 指向第一个 aaa
+</code></pre>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://ay27.github.io/UliWKFxiR/">
+              <h3 class="post-title">
+                下一篇：一个极简C++单元测试框架
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">Tempora mutantur nos et mutamur in illis</div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/ay27" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://ay27.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
