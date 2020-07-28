@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://ay27.github.io</id>
     <title>ay27</title>
-    <updated>2020-07-21T14:37:09.592Z</updated>
+    <updated>2020-07-28T14:52:11.667Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://ay27.github.io"/>
     <link rel="self" href="https://ay27.github.io/atom.xml"/>
@@ -10,6 +10,53 @@
     <logo>https://ay27.github.io/images/avatar.png</logo>
     <icon>https://ay27.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, ay27</rights>
+    <entry>
+        <title type="html"><![CDATA[C++的四种cast]]></title>
+        <id>https://ay27.github.io/ycIcpRcKF/</id>
+        <link href="https://ay27.github.io/ycIcpRcKF/">
+        </link>
+        <updated>2020-07-28T14:17:23.000Z</updated>
+        <summary type="html"><![CDATA[<p>C++有四种类型转换：static_cast、dynamic_cast、const_cast和reinterpret_cast，这里简单记录。</p>
+<p>使用方法都一样：</p>
+<pre><code class="language-c++">cast-fn&lt;type-id&gt;(expression);
+</code></pre>
+]]></summary>
+        <content type="html"><![CDATA[<p>C++有四种类型转换：static_cast、dynamic_cast、const_cast和reinterpret_cast，这里简单记录。</p>
+<p>使用方法都一样：</p>
+<pre><code class="language-c++">cast-fn&lt;type-id&gt;(expression);
+</code></pre>
+<!-- more -->
+<h3 id="static_cast">static_cast</h3>
+<p>和C语言的类型转换最相似，没有运行时检查来保证安全性。static_cast不能转换掉expression的const、volatile、或者__unaligned属性。最常用于父类、子类的类型转换。<br>
+静态的转换检查，可以在编译期提前检查静态转换是否安全，然而运行时无法保证安全性。</p>
+<h3 id="const_cast">const_cast</h3>
+<p>该运算符用来修改类型的const或volatile属性。有两个特点：</p>
+<ol>
+<li>常量指针被转化成非常量的指针，并且仍然指向原来的对象；</li>
+<li>常量引用被转换成非常量的引用，并且仍然指向原来的对象。</li>
+</ol>
+<p>一种比较特殊的使用场景是，当我们知道某个函数只接收非const参数，然而我们还得知这个非const参数其实并不会被改动，这时候就可以把一个const变量通过const_cast转换得到合适的参数：</p>
+<pre><code class="language-c++">void push(int* d) {
+  vec.push_back(*d);
+}
+Demo demo(3);
+const int xx = 123;
+demo.push(const_cast&lt;int*&gt;(&amp;xx));
+</code></pre>
+<p>然而能不用就不用！！</p>
+<h3 id="dynamic_cast">dynamic_cast</h3>
+<p>支持运行时识别指针或引用所指向的对象。</p>
+<p>dynamic_cast运算符可以在执行期决定真正的类型。如果一个指针确实指向 type_id 的子类，那么从父类通过dynamic_cast 到子类是安全的，可以正确返回；然而当这个指针实际并不是指向的 type_id 的子类对象，那么cast 是不安全的，直接返回一个空指针。</p>
+<p>尽可能使用 dynamic_cast 而不是 static_cast。</p>
+<h3 id="reinterpret_cast">reinterpret_cast</h3>
+<p>此标识符的意思即为数据的二进制形式重新解释，但是不改变其值。</p>
+<pre><code class="language-c++">float f = 123.0;
+int a = (int)f;	// a==123
+int b = reinterpret_cast&lt;int&amp;&gt;(f);  // b==1123418112
+int c = *((int*)((void*)(&amp;f))); // c==1123418112
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[C++ STL 容器数据结构汇总]]></title>
         <id>https://ay27.github.io/Gx_nHmmwu/</id>
