@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://ay27.github.io</id>
     <title>ay27</title>
-    <updated>2020-07-28T14:52:11.667Z</updated>
+    <updated>2020-08-02T13:50:23.992Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://ay27.github.io"/>
     <link rel="self" href="https://ay27.github.io/atom.xml"/>
@@ -10,6 +10,176 @@
     <logo>https://ay27.github.io/images/avatar.png</logo>
     <icon>https://ay27.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, ay27</rights>
+    <entry>
+        <title type="html"><![CDATA[C++11 杂七杂八]]></title>
+        <id>https://ay27.github.io/n8ZXr-S4y/</id>
+        <link href="https://ay27.github.io/n8ZXr-S4y/">
+        </link>
+        <updated>2020-07-29T15:06:29.000Z</updated>
+        <summary type="html"><![CDATA[<p>随便记录一些杂七杂八的 C++11/14 特性。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>随便记录一些杂七杂八的 C++11/14 特性。</p>
+<!-- more -->
+<p><ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#nullptr">nullptr</a></li>
+<li><a href="#constexpr">constexpr</a></li>
+<li><a href="#decltype">decltype</a></li>
+<li><a href="#%E5%88%97%E8%A1%A8%E5%88%9D%E5%A7%8B%E5%8C%96">列表初始化</a></li>
+<li><a href="#%E6%A8%A1%E6%9D%BF%E4%B8%80%E4%BA%9B%E7%89%B9%E6%AE%8A%E7%94%A8%E6%B3%95">模板一些特殊用法</a></li>
+<li><a href="#%E8%99%9A%E5%87%BD%E6%95%B0%E7%9B%B8%E5%85%B3">虚函数相关</a></li>
+<li><a href="#%E7%A6%81%E7%94%A8%E9%BB%98%E8%AE%A4%E5%87%BD%E6%95%B0">禁用默认函数</a></li>
+<li><a href="#lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F">Lambda表达式</a></li>
+<li><a href="#%E5%B7%A6%E5%80%BC%E5%8F%B3%E5%80%BC-%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8">左值右值、右值引用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+<h3 id="nullptr">nullptr</h3>
+<p>特指空指针。在某些情况下，NULL 可能代指 0 或者 (void*)(0)，为了避免歧义，引入 nullptr 特指空指针。</p>
+<pre><code class="language-c++">void fn(char*);
+void fn(int);
+
+fn(0); // ok, call fn(int)
+fn(NULL); // failed
+fn(nullptr); //ok, call fn(char*)
+</code></pre>
+<h3 id="constexpr">constexpr</h3>
+<p>表明某些函数、表达式为常量表达式，可在编译期尽可能优化。当无法在编译期确定值，就跟普通函数一样了。</p>
+<pre><code class="language-c++">constexpr int fib(const int x) {
+    return x == 1 || x == 2 ? 1 : fib(x-1)+fib(x-2);
+}
+int arr[fib(12)]; // ok
+</code></pre>
+<h3 id="decltype">decltype</h3>
+<p>在编译期获得表达式的类型，通常与 auto 联合使用。</p>
+<pre><code class="language-c++">auto x = 1;
+auto y = 2;
+decltype(x+y) z;  // z is int
+</code></pre>
+<p>此外，在C++14里还可以直接写 auto 作为函数的返回类型，而无需写 decltype(x+y)。。。</p>
+<pre><code class="language-c++">template&lt;typename T, typename U&gt;
+auto add(T x, U y) {
+    return x+y;
+}
+</code></pre>
+<h3 id="列表初始化">列表初始化</h3>
+<pre><code class="language-c++">int arr3[3] = {1,2,3};
+vector&lt;int&gt; v = {1,2,3,4};
+void func(initializer_list&lt;int&gt; list) {...}
+struct A {
+    int a;
+    float b;
+}
+A a{1, 1.2};
+</code></pre>
+<h3 id="模板一些特殊用法">模板一些特殊用法</h3>
+<pre><code class="language-c++">template&lt; typename T, typename U, int value&gt;
+class SuckType {};
+
+template &lt;typename T&gt;
+using NewType = SuckType&lt;int, T, 1&gt;;    // 合法
+
+// 变长参数模板可以接受任意类型
+template&lt;typename... Ts&gt; class Magic;
+class Magic&lt;int, float, vector&lt;int&gt;, string&gt; darkMagic;
+
+template&lt;typename... Args&gt;
+void magic(Args... args) {
+    std::cout &lt;&lt; sizeof...(args) &lt;&lt; std::endl;
+}
+
+// 递归拆包
+template&lt;typename T&gt;
+void printf(T value) {
+    std::cout &lt;&lt; value &lt;&lt; std::endl;
+}
+template&lt;typename T, typename... Args&gt;
+void printf(T value, Args... args) {
+    std::cout &lt;&lt; value &lt;&lt; std::endl;
+    printf(args...);
+}
+printf(1, 2, &quot;123&quot;, 1.1);
+</code></pre>
+<h3 id="虚函数相关">虚函数相关</h3>
+<p>虚函数表，实际是用一个表格记录虚函数的指针，子类和父类在这里可能产生继承关系，虚表需要在运行时判定；而非虚函数表则是编译期决定的。</p>
+<pre><code class="language-c++">class Base {
+public:
+    void print();
+    virtual void vPrint();
+    virtual void printTag();
+};
+class Derived : public Base {
+public:
+    void print();
+    virtual void vPrint() override;  // c++11后需要明确写明 override
+};
+
+Derived* der = new Derived();
+Base* base = der;
+der-&gt;print();  // call derived print
+base-&gt;print(); // call base print
+base-&gt;vPrint(); // call derived print
+</code></pre>
+<h3 id="禁用默认函数">禁用默认函数</h3>
+<pre><code class="language-c++">class Demo {
+public:
+    Demo() = delete;
+    Demo&amp; operator=(const Demo&amp;) = default;
+    Demo(int x);
+};
+</code></pre>
+<h3 id="lambda表达式">Lambda表达式</h3>
+<pre><code class="language-c++">[捕获列表](参数列表) mutable(可选) 异常属性 -&gt; 返回类型 {
+    // 函数体
+}
+</code></pre>
+<p>通常有值捕获和引用捕获两种，<code>[&amp;]</code> 为引用捕获，<code>[=] / [var1, var2...]</code> 为值捕获，直接使用当时定义的值：</p>
+<pre><code class="language-c++">void learn_lambda_func_1() {
+    int value_1 = 1;
+    // 参数类型还可以写 auto，另一种意义上的泛化
+    auto copy_value_1 = [=](auto x, auto y) {
+        return value_1 + x + y;
+    };
+    value_1 = 100;
+    auto stored_value_1 = copy_value_1(1, 2);
+    cout &lt;&lt; &quot;value_1 = &quot; &lt;&lt; value_1 &lt;&lt; endl;    // == 100
+    cout &lt;&lt; &quot;stored_value_1 = &quot; &lt;&lt; stored_value_1 &lt;&lt; endl;  // 值捕获，== 4；引用捕获，==103
+}
+</code></pre>
+<h3 id="左值右值-右值引用">左值右值、右值引用</h3>
+<ul>
+<li>左值：拥有变量名字、明确的内存地址、赋值符号的左侧；</li>
+<li>右值：表达式结束后不再存在的临时对象；
+<ul>
+<li>纯右值：字面量，10、true等；</li>
+<li>将亡值：即将被销毁、但却能被移动的值；</li>
+<li>右值引用：写法：<code>T&amp;&amp;</code></li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-c++">std::vector&lt;int&gt; foo() {
+    std::vector&lt;int&gt; temp = {1, 2, 3, 4};
+    return temp;
+}
+
+std::vector&lt;int&gt; v = foo();  // 将亡值，会触发一次拷贝构造函数
+</code></pre>
+<p>使用<code>std::move</code>和<code>std::forward</code>函数可以灵活转换左右值和右值引用情况。其中 <code>std::move</code> 可以将一个任意值转换获得对应的右值引用；<code>std::forward</code> 可以实现完美转发，如下：</p>
+<pre><code class="language-c++">void func2(string&amp; str) { ... }
+void func2(string&amp;&amp; str) { ... }    // 会call到这个函数
+void func(string&amp;&amp; str) {
+    func2(std::forward(str));
+}
+</code></pre>
+<p>在这个例子中，对于 func 函数，str 在当前函数中是左值（拥有名字），虽然它传递进来的是一个右值引用，因此如果我们直接写 <code>func2(str)</code>，会调用到第一个函数；而std::forward 可以保持 str 原来的右值引用特性，实际调用第二个函数。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[C++的四种cast]]></title>
         <id>https://ay27.github.io/ycIcpRcKF/</id>
