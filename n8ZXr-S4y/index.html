@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://ay27.github.io/favicon.ico?v=1596376219827">
+<link rel="shortcut icon" href="https://ay27.github.io/favicon.ico?v=1596377064457">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://ay27.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://ay27.github.io">
-        <img class="avatar" src="https://ay27.github.io/images/avatar.png?v=1596376219827" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://ay27.github.io/images/avatar.png?v=1596377064457" alt="" width="32px" height="32px">
       </a>
       <a href="https://ay27.github.io">
         <h1 class="site-title">ay27</h1>
@@ -249,13 +249,23 @@ public:
 std::vector&lt;int&gt; v = foo();  // 将亡值，会触发一次拷贝构造函数
 </code></pre>
 <p>使用<code>std::move</code>和<code>std::forward</code>函数可以灵活转换左右值和右值引用情况。其中 <code>std::move</code> 可以将一个任意值转换获得对应的右值引用；<code>std::forward</code> 可以实现完美转发，如下：</p>
-<pre><code class="language-c++">void func2(string&amp; str) { ... }
-void func2(string&amp;&amp; str) { ... }    // 会call到这个函数
+<pre><code class="language-c++">void func2(string&amp; str) { cout &lt;&lt; &quot;left\n&quot;; }
+void func2(string&amp;&amp; str) { cout &lt;&lt; &quot;right\n&quot;; }
 void func(string&amp;&amp; str) {
-    func2(std::forward(str));
+    func2(str);                   // 会调用第一个函数
+    func2(std::move(str));    // 会调用第二个函数
+    func2(std::forward&lt;string&amp;&gt;(str)); // 会调用第一个函数
+    func2(std::forward&lt;string&amp;&amp;&gt;(str)); // 也可以这么写，会调用第二个函数
+}
+
+void func(string&amp; str) {
+    func2(str);                   // 会调用第一个函数
+    func2(std::move(str));    // 会调用第二个函数
+    func2(std::forward&lt;string&amp;&gt;(str)); // 会调用第一个函数
+    func2(std::forward&lt;string&gt;(str)); // 会调用第二个函数
+    func2(std::forward&lt;string&amp;&amp;&gt;(str)); // 也可以这么写，会调用第二个函数
 }
 </code></pre>
-<p>在这个例子中，对于 func 函数，str 在当前函数中是左值（拥有名字），虽然它传递进来的是一个右值引用，因此如果我们直接写 <code>func2(str)</code>，会调用到第一个函数；而std::forward 可以保持 str 原来的右值引用特性，实际调用第二个函数。</p>
 
           </div>
         </div>

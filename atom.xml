@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://ay27.github.io</id>
     <title>ay27</title>
-    <updated>2020-08-02T13:50:23.992Z</updated>
+    <updated>2020-08-02T14:04:27.247Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://ay27.github.io"/>
     <link rel="self" href="https://ay27.github.io/atom.xml"/>
@@ -171,13 +171,23 @@ public:
 std::vector&lt;int&gt; v = foo();  // 将亡值，会触发一次拷贝构造函数
 </code></pre>
 <p>使用<code>std::move</code>和<code>std::forward</code>函数可以灵活转换左右值和右值引用情况。其中 <code>std::move</code> 可以将一个任意值转换获得对应的右值引用；<code>std::forward</code> 可以实现完美转发，如下：</p>
-<pre><code class="language-c++">void func2(string&amp; str) { ... }
-void func2(string&amp;&amp; str) { ... }    // 会call到这个函数
+<pre><code class="language-c++">void func2(string&amp; str) { cout &lt;&lt; &quot;left\n&quot;; }
+void func2(string&amp;&amp; str) { cout &lt;&lt; &quot;right\n&quot;; }
 void func(string&amp;&amp; str) {
-    func2(std::forward(str));
+    func2(str);                   // 会调用第一个函数
+    func2(std::move(str));    // 会调用第二个函数
+    func2(std::forward&lt;string&amp;&gt;(str)); // 会调用第一个函数
+    func2(std::forward&lt;string&amp;&amp;&gt;(str)); // 也可以这么写，会调用第二个函数
+}
+
+void func(string&amp; str) {
+    func2(str);                   // 会调用第一个函数
+    func2(std::move(str));    // 会调用第二个函数
+    func2(std::forward&lt;string&amp;&gt;(str)); // 会调用第一个函数
+    func2(std::forward&lt;string&gt;(str)); // 会调用第二个函数
+    func2(std::forward&lt;string&amp;&amp;&gt;(str)); // 也可以这么写，会调用第二个函数
 }
 </code></pre>
-<p>在这个例子中，对于 func 函数，str 在当前函数中是左值（拥有名字），虽然它传递进来的是一个右值引用，因此如果我们直接写 <code>func2(str)</code>，会调用到第一个函数；而std::forward 可以保持 str 原来的右值引用特性，实际调用第二个函数。</p>
 ]]></content>
     </entry>
     <entry>
