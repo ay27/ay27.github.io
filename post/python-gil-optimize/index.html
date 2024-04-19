@@ -1,0 +1,205 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python GIL 在高性能数据收发场景下的优化方法 | ay27的个人小站</title>
+<link rel="shortcut icon" href="https://ay27.com/favicon.ico?v=1713533439691">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ay27.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python GIL 在高性能数据收发场景下的优化方法 | ay27的个人小站 - Atom Feed" href="https://ay27.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="最近有小伙伴问到我关于 pyzmq 在高并发场景下的性能优化方法，多次优化后得到了一个还不错的效果。考虑到这个场景其实挺普遍的，这里记录一下。
+
+场景
+这里的场景是 pyzmq 的 REQ-ROUTER 模式：
+
+REQ 分布在远端节点的 ..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://ay27.com">
+  <img class="avatar" src="https://ay27.com/images/avatar.png?v=1713533439691" alt="">
+  </a>
+  <h1 class="site-title">
+    ay27的个人小站
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/ay27" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python GIL 在高性能数据收发场景下的优化方法
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-10-21
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>最近有小伙伴问到我关于 pyzmq 在高并发场景下的性能优化方法，多次优化后得到了一个还不错的效果。考虑到这个场景其实挺普遍的，这里记录一下。</p>
+<!-- more -->
+<h2 id="场景">场景</h2>
+<p>这里的场景是 pyzmq 的 REQ-ROUTER 模式：</p>
+<figure data-type="image" tabindex="1"><img src="https://ay27.com/post-images/py-gil-img1.png" alt="py-gil-img1" loading="lazy"></figure>
+<p>REQ 分布在远端节点的 client，按照一次发、一次收的次序持续工作。ROUTER 作为 server 端接收来自所有 REQ 侧的请求，并把数据打到后端 Worker。Worker 把数据处理后，结果返回给 ROUTER，分发回各个 REQ。其中在最初的场景设定下，ROUTER 和 Worker 是同一个进程内的，认为这样可以避免节点内部的跨进程数据传递开销。其中 ROUTER 工作的伪代码如下：</p>
+<pre><code class="language-python">req_queue = queue.Queue(maxsize=1024)
+rsp_queue = queue.Queue(maxsize=1024)
+
+def router_thread(req_queue, rsp_queue):
+    While True:
+        try:
+            data = zmq_socket.recv(blocking=False)
+        except Exception:
+            pass
+        req_queue.push(data)
+
+        while not rsp_queue.empty():
+            zmq_socket.send(rsp_queue.pop())
+
+def worker_thread(req_queue, rsp_queue):
+	while True:
+        buf = []
+        while not req_queue.empty():
+			buf.append(req_queue.pop())
+        rsp = do_heavy_work(buf)
+		for dat in rsp:
+            rsp_queue.push(dat)
+</code></pre>
+<h2 id="问题分析">问题分析</h2>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%9C%BA%E6%99%AF">场景</a></li>
+<li><a href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90">问题分析</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    proxy: "https://proxy-gitalk-api.netlify.app/github_access_token",
+    clientID: '8f20a98cae4d77368357',
+    clientSecret: '3d7b18b3bdb13fc98d131a979a966840d756d59d',
+    repo: 'ay27.github.io',
+    owner: 'ay27',
+    admin: ['ay27'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://ay27.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

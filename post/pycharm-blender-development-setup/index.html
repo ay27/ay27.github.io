@@ -1,0 +1,221 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PyCharm+Blender开发配置指南 | ay27的个人小站</title>
+<link rel="shortcut icon" href="https://ay27.com/favicon.ico?v=1713533439691">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ay27.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="PyCharm+Blender开发配置指南 | ay27的个人小站 - Atom Feed" href="https://ay27.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="最近需要写比较多的 blender 脚本，奈何在 mac 下没有完整的 pip 安装包，导致在 pycharm 下代码补全总是不行，虽然有 copilot 辅助也能基本搞定，但总是难以了解到很多细节。于是全网搜了下，整理出来下面的方法，以作..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://ay27.com">
+  <img class="avatar" src="https://ay27.com/images/avatar.png?v=1713533439691" alt="">
+  </a>
+  <h1 class="site-title">
+    ay27的个人小站
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/ay27" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              PyCharm+Blender开发配置指南
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-02-25
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://ay27.com/post-images/pycharm-blender-development-setup.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>最近需要写比较多的 blender 脚本，奈何在 mac 下没有完整的 pip 安装包，导致在 pycharm 下代码补全总是不行，虽然有 copilot 辅助也能基本搞定，但总是难以了解到很多细节。于是全网搜了下，整理出来下面的方法，以作记录。</p>
+<!-- more -->
+<p>首先声明这个方法并非我原创，来源可见这些链接：</p>
+<ol>
+<li>https://github.com/Korchy/blender_autocomplete/tree/master</li>
+<li>https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/</li>
+<li>https://github.com/mutantbob/pycharm-blender/blob/master/python_api/pypredef_gen.py</li>
+<li>https://blenderartists.org/t/accessing-blender-python-api-in-pycharm/1274770/5</li>
+</ol>
+<h4 id="1-确认-blender-版本">1. 确认 blender 版本</h4>
+<figure data-type="image" tabindex="1"><img src="https://ay27.com/post-images/image-20240308112612320.png" alt="image-20240308112612320" loading="lazy"></figure>
+<h4 id="2-下载提前解析好的-pyref-仓库内容">2. 下载提前解析好的 pyref 仓库内容</h4>
+<pre><code class="language-bash">git clone https://github.com/Korchy/blender_autocomplete.git
+</code></pre>
+<h4 id="3-设置-pycharm-的-python-interpreter-环境">3. 设置 pycharm 的 python interpreter 环境</h4>
+<ol>
+<li>设置一个常用的 python interpreter，如下是我常用的 miniforge 环境：</li>
+</ol>
+<figure data-type="image" tabindex="2"><img src="https://ay27.com/post-images/image-20240308112917059.png" alt="image-20240308112917059" loading="lazy"></figure>
+<ol start="2">
+<li>Show All：</li>
+</ol>
+<figure data-type="image" tabindex="3"><img src="https://ay27.com/post-images/image-20240308113022020.png" alt="image-20240308113022020" loading="lazy"></figure>
+<ol start="3">
+<li>设置环境路径：</li>
+</ol>
+<figure data-type="image" tabindex="4"><img src="https://ay27.com/post-images/image-20240308113301457.png" alt="image-20240308113301457" loading="lazy"></figure>
+<ol start="4">
+<li>添加刚才下载的仓库路径，注意版本号！比如我这里的 blender 是 3.6.5，则使用 3.6 目录：</li>
+</ol>
+<figure data-type="image" tabindex="5"><img src="https://ay27.com/post-images/image-20240308113359408.png" alt="image-20240308113359408" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#1-%E7%A1%AE%E8%AE%A4-blender-%E7%89%88%E6%9C%AC">1. 确认 blender 版本</a></li>
+<li><a href="#2-%E4%B8%8B%E8%BD%BD%E6%8F%90%E5%89%8D%E8%A7%A3%E6%9E%90%E5%A5%BD%E7%9A%84-pyref-%E4%BB%93%E5%BA%93%E5%86%85%E5%AE%B9">2. 下载提前解析好的 pyref 仓库内容</a></li>
+<li><a href="#3-%E8%AE%BE%E7%BD%AE-pycharm-%E7%9A%84-python-interpreter-%E7%8E%AF%E5%A2%83">3. 设置 pycharm 的 python interpreter 环境</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://ay27.com/post/parsing-uasset-file/">
+              <h3 class="post-title">
+                尝试解析 uasset 文件
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    proxy: "https://proxy-gitalk-api.netlify.app/github_access_token",
+    clientID: '8f20a98cae4d77368357',
+    clientSecret: '3d7b18b3bdb13fc98d131a979a966840d756d59d',
+    repo: 'ay27.github.io',
+    owner: 'ay27',
+    admin: ['ay27'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://ay27.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

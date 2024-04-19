@@ -1,0 +1,203 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>闲聊一下 jwt 签名方法 | ay27的个人小站</title>
+<link rel="shortcut icon" href="https://ay27.com/favicon.ico?v=1713533439691">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ay27.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="闲聊一下 jwt 签名方法 | ay27的个人小站 - Atom Feed" href="https://ay27.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="最近看到一些关于 jwt 签名算法的文章，总觉得讲解太过细节，没能很清晰的介绍清楚，于是我就来尝试闲聊一下吧。内容不一定严谨。
+
+1. 身份验证
+一个安全的后端系统，必然需要使用各种方法来鉴别一个外部请求是 “有效的、被授权的”。这就像家里..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://ay27.com">
+  <img class="avatar" src="https://ay27.com/images/avatar.png?v=1713533439691" alt="">
+  </a>
+  <h1 class="site-title">
+    ay27的个人小站
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/ay27" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              闲聊一下 jwt 签名方法
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-10-27
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>最近看到一些关于 jwt 签名算法的文章，总觉得讲解太过细节，没能很清晰的介绍清楚，于是我就来尝试闲聊一下吧。内容不一定严谨。</p>
+<!-- more -->
+<h2 id="1-身份验证">1. 身份验证</h2>
+<p>一个安全的后端系统，必然需要使用各种方法来鉴别一个外部请求是 “有效的、被授权的”。这就像家里，我们需要给每个家庭成员一把钥匙，让他们有权限打开家门。于是我们可以推论出一个最直白的原理：</p>
+<ul>
+<li>一个请求是有效的，那它必须持有一把 “正确的钥匙”</li>
+</ul>
+<p>这里的 “钥匙”，就是指请求中附带的 权限说明、身份说明 等信息。而为了外部能随意制造假钥匙，我们还需要确保这把 “钥匙” 的生成过程是保密的，否则谁都可以创建钥匙来扰乱系统了。</p>
+<p>需要说明一下的是，这里我们仅关心单个请求的合法性验证问题，是用户登录成功后每次请求的合法性校验问题，而非用户登录认证场景。当请求方通过各种方式完成登录后，我们需要授予一把钥匙给到请求方。我们这里讨论的这把钥匙应该如何生成、如何校验的问题。</p>
+<figure data-type="image" tabindex="1"><img src="https://ay27.com/post-images/image-20231028134547626.png" alt="image-20231028134547626" loading="lazy"></figure>
+<h2 id="2-一个朴素的钥匙生成思路">2. 一个朴素的钥匙生成思路</h2>
+<p>最简单的，我们给请求方一个特殊的字符串，比如 “ThisIsTheKey”，所有请求方携带上这个字符串发起请求，后端收到请求后，检查这个字符串是否完全匹配。而非法的请求方不知道这个特殊字符串的情况下，自然无法发起正确的请求了。</p>
+<p>比如 API Key，就是这种思路的实现方法。它的优缺点都非常明显：</p>
+<p>优点：</p>
+<ul>
+<li>简单高效。尤其在高并发场景下，校验一个 API Key 是否合法仅需要比对一次字符串而已，效率非常高</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>它无法提供请求方的身份信息。由于它们都有一致的 API Key，我们无法得知这个请求方的任何身份信息（虽然可以在通信协议里加上身份信息，但它无法校验正确性）</li>
+<li>泄漏风险高。一旦发生泄漏，我们只能全局刷新 API Key，一旦请求方数量上来后，这个操作是灾难性的</li>
+</ul>
+<p>API Key 一般用在安全性要求不高的定向请求场景，如后端服务互调、私域接口开放等场景。</p>
+<p>根据上面的缺点，我们很容易想到两个针对性的规避方法：</p>
+<ul>
+<li>后端系统保存一份身份信息，然后把代表这份信息的一个 “指纹” 告知请求方</li>
+<li>动态生成的、或有时限的钥匙能够避免或降低钥匙泄漏的风险</li>
+</ul>
+<h2 id="3-后端记录身份信息的方法">3. 后端记录身份信息的方法</h2>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81">1. 身份验证</a></li>
+<li><a href="#2-%E4%B8%80%E4%B8%AA%E6%9C%B4%E7%B4%A0%E7%9A%84%E9%92%A5%E5%8C%99%E7%94%9F%E6%88%90%E6%80%9D%E8%B7%AF">2. 一个朴素的钥匙生成思路</a></li>
+<li><a href="#3-%E5%90%8E%E7%AB%AF%E8%AE%B0%E5%BD%95%E8%BA%AB%E4%BB%BD%E4%BF%A1%E6%81%AF%E7%9A%84%E6%96%B9%E6%B3%95">3. 后端记录身份信息的方法</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    proxy: "https://proxy-gitalk-api.netlify.app/github_access_token",
+    clientID: '8f20a98cae4d77368357',
+    clientSecret: '3d7b18b3bdb13fc98d131a979a966840d756d59d',
+    repo: 'ay27.github.io',
+    owner: 'ay27',
+    admin: ['ay27'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://ay27.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

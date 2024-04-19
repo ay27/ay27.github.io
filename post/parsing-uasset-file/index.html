@@ -1,0 +1,237 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>尝试解析 uasset 文件 | ay27的个人小站</title>
+<link rel="shortcut icon" href="https://ay27.com/favicon.ico?v=1713533439691">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ay27.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="尝试解析 uasset 文件 | ay27的个人小站 - Atom Feed" href="https://ay27.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="最近需要解析 UnrealEngine 中的 uasset 文件，希望从中解析得到一些 meta 信息，如 object name，package path，UE version 等信息。unreal 的 python 接口并不能很准确获取..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://ay27.com">
+  <img class="avatar" src="https://ay27.com/images/avatar.png?v=1713533439691" alt="">
+  </a>
+  <h1 class="site-title">
+    ay27的个人小站
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/ay27" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              尝试解析 uasset 文件
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-10-18
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://ay27.com/post-images/parsing-uasset-file.png" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>最近需要解析 UnrealEngine 中的 uasset 文件，希望从中解析得到一些 meta 信息，如 object name，package path，UE version 等信息。unreal 的 python 接口并不能很准确获取到这些信息，且使用有较多限制，如它需要依赖一个完整的项目环境。最关键的是，当我们拿到一个孤立的 uasset 文件时，我们甚至不知道应该把它放置到项目中的哪个位置。而 UE Editor 中，一旦我们把 uasset 文件错误放置，若有其他 uasset 引用了它，轻则闪退，重则卡死。而即使我们位置摆放对了，它所依赖的 reference 若不存在，那么它的载入也会成为问题，比如它是一个 StaticMesh，那它所依赖的 Material 或 MaterialInstanceConstant 缺失时，会默认赋予它一个灰模材质，这并非我们希望的。</p>
+<p>这里的解决办法是直接解析 uasset 文件的二进制内容，尝试从中提取一些需要的信息。</p>
+<p>具体实现代码请见：<a href="https://github.com/ay27/uasset-parser-py">https://github.com/ay27/uasset-parser-py</a></p>
+<!-- more -->
+<h2 id="1-ue-中的文件序列化方法">1. UE 中的文件序列化方法</h2>
+<p>UE 利用 C++ 的运行时反射，构建了一套文件的序列化和反序列化方法。相关的论述和整理已经有非常多的文章了，这里记录几个对我帮助较大的内容：</p>
+<ol>
+<li><a href="https://www.jianshu.com/p/9fea500aaa4d">https://www.jianshu.com/p/9fea500aaa4d</a></li>
+<li><a href="http://www.aclockworkberry.com/custom-struct-serialization-for-networking-in-unreal-engine/">http://www.aclockworkberry.com/custom-struct-serialization-for-networking-in-unreal-engine/</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/617464719">https://zhuanlan.zhihu.com/p/617464719</a></li>
+</ol>
+<p>简单总结是，绝大部分 UE 中的对象都直接或间接继承了 <code>FArchive</code> 基类，通过重载 <code>&lt;&lt;</code> 符号，实现对象的序列化和反序列化过程。uasset 文件也是类似的一个对象序列化结果，只是它更复杂一些，被包裹在一个名为 <code>Package</code> 包中。</p>
+<h2 id="2-flinkerload加载-uasset-过程">2. FLinkerLoad：加载 uasset 过程</h2>
+<p>从上面的文章大概知道，一个 uasset 文件的内容排布如下图。一个大概的猜想是，只要我们能把 <code>File Summary</code> 和 <code>Name Table</code> 区正确解读，应该能够满足我们抽取 meta 信息的需求。</p>
+<figure data-type="image" tabindex="1"><img src="https://ay27.com/post-images/uasset_filr_format.png" alt="img" loading="lazy"></figure>
+<p>关键源码：</p>
+<ol>
+<li><code>Engine\Source\Runtime\CoreUObject\Public\UObject\LinkerLoad.h</code></li>
+<li><code>Engine\Source\Runtime\CoreUObject\Private\UObject\LinkerLoad.cpp</code></li>
+</ol>
+<p><code>FLinkerLoad::Tick</code> 函数是主要入口，在<code>FLinkerLoad::ProcessPackageSummary</code>函数里能看到完整的 uasset 文件分布情况：</p>
+<figure data-type="image" tabindex="2"><img src="https://ay27.com/post-images/image-20231018233551593.png" alt="image-20231018233551593" loading="lazy"></figure>
+<p>与参考文章中的分布一致，可以确认这里便是核心的读取过程了。</p>
+<p>第一次看感觉很奇怪，这里 LinkerLoad 应用于加载过程，应该是反序列化才是，为何这里是“序列化”过程呢？具体原因可以看这里：<a href="#jump1">双向的流导向符号</a></p>
+<p>接着细读其中过程。</p>
+<pre><code class="language-c++">FLinkerLoad::SerializePackageFileSummary()
+	FLinkerLoad::SerializePackageFileSummaryInternal()
+		...
+    	// Read summary from file.
+		StructuredArchiveRootRecord.GetValue() &lt;&lt; SA_VALUE(TEXT(&quot;Summary&quot;), Summary);
+</code></pre>
+<p>这里读入整个 Summary 内容，因此 Summary 对象的类：FPackageFileSummary，就是对应前文里的 Summary Table。因此很顺利找到其序列化代码：</p>
+<figure data-type="image" tabindex="3"><img src="https://ay27.com/post-images/image-20231021164907350.png" alt="image-20231021164907350" loading="lazy"></figure>
+<p>我们可以对着其二进制内容尝试解读一下。注意这个 Tag 值是<code>0x9E2A83C1</code>，表明它是 little-endian，因此需要反序解读，如第三个 4 字节 <code>60030000</code>，需要拆为 4 份：<code>60</code>、<code>03</code>、<code>00</code>、<code>00</code>，然后反序拼起来得到：<code>0x00000360</code>，因此得到 864：</p>
+<figure data-type="image" tabindex="4"><img src="https://ay27.com/post-images/image-20231021174206171.png" alt="image-20231021174206171" loading="lazy"></figure>
+<p>而根据代码，可以解读出的信息有：</p>
+<pre><code>Tag=0x9E2A83C1
+LegacyFileVersion=-8
+LegacyUE3version=864
+FileVersionUE4=522
+FileVersionUE5=1009
+</code></pre>
+<p>对比源码定义，这些都是有效值，因此我们的解读是正确的。</p>
+<p>于是接下来就可以照猫画虎，把这段 C++ 代码转写为 python，代码较长，请看这里：<a href="https://github.com/ay27/uasset-parser-py/blob/main/structures.py#L168">https://github.com/ay27/uasset-parser-py/blob/main/structures.py#L168</a></p>
+<p>其中一个花了不少时间的坑是，在 UE 里，bool 的序列化是 4 字节的，而不是我们通常认为的 1 字节。在 <code>FArchive</code> 类中有绝大部分基础类型的序列化方式，如这里的 bool，或int16，int32，uint32 等等：</p>
+<figure data-type="image" tabindex="5"><img src="https://ay27.com/post-images/image-20231021164441224.png" alt="image-20231021164441224" loading="lazy"></figure>
+<p>接着，我们可以把 <code>NameMap</code>、<code>ImportMap</code>、<code>ExportMap</code> 以同样的方式实现出来。比如 <code>NameMap</code>，我们根据 <code>Summary</code> 中的 <code>NameCount</code> 和 <code>NameOffset</code> 字段可以知道它的具体位置和数量，于是也能顺利把内容解读出来了：</p>
+<figure data-type="image" tabindex="6"><img src="https://ay27.com/post-images/image-20231021181703979.png" alt="image-20231021181703979" loading="lazy"></figure>
+<p>完整的解析代码请见我的 repo：<a href="https://github.com/ay27/uasset-parser-py">https://github.com/ay27/uasset-parser-py</a></p>
+<p>使用这份代码，可以把 uasset 文件中我需要的 meta 信息全部解读出来：</p>
+<figure data-type="image" tabindex="7"><img src="https://ay27.com/post-images/image-20231021175942979.png" alt="image-20231021175942979" loading="lazy"></figure>
+<h2 id='jump1'>3. 附：双向的流导向符号 </h2>
+<p>UE 里所有序列化和反序列化的类都直接或间接的继承自 FArchive，FArchive 的一个很特别的设计是，<code>&lt;&lt;</code> 是双向的：</p>
+<figure data-type="image" tabindex="8"><img src="https://ay27.com/post-images/image-20231020205952962.png" alt="image-20231020205952962" loading="lazy"></figure>
+<p>如其中一个实现，当处于“序列化”阶段，则是 <code>左 &lt;-- 右</code> 的方向；在“反序列化”阶段，则是 <code>左 --&gt; 右</code>：</p>
+<figure data-type="image" tabindex="9"><img src="https://ay27.com/post-images/image-20231020210008881.png" alt="image-20231020210008881" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-ue-%E4%B8%AD%E7%9A%84%E6%96%87%E4%BB%B6%E5%BA%8F%E5%88%97%E5%8C%96%E6%96%B9%E6%B3%95">1. UE 中的文件序列化方法</a></li>
+<li><a href="#2-flinkerload%E5%8A%A0%E8%BD%BD-uasset-%E8%BF%87%E7%A8%8B">2. FLinkerLoad：加载 uasset 过程</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://ay27.com/post/math-expr-executor/">
+              <h3 class="post-title">
+                实现一个数学表达式的解析执行器
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    proxy: "https://proxy-gitalk-api.netlify.app/github_access_token",
+    clientID: '8f20a98cae4d77368357',
+    clientSecret: '3d7b18b3bdb13fc98d131a979a966840d756d59d',
+    repo: 'ay27.github.io',
+    owner: 'ay27',
+    admin: ['ay27'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://ay27.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

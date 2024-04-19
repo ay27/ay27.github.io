@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://ay27.com</id>
+    <title>ay27的个人小站</title>
+    <updated>2024-04-19T13:35:01.218Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://ay27.com"/>
+    <link rel="self" href="https://ay27.com/atom.xml"/>
+    <subtitle>温故而知新</subtitle>
+    <logo>https://ay27.com/images/avatar.png</logo>
+    <icon>https://ay27.com/favicon.ico</icon>
+    <rights>All rights reserved 2024, ay27的个人小站</rights>
+    <entry>
+        <title type="html"><![CDATA[聊聊streamlit库的设计]]></title>
+        <id>https://ay27.com/post/about_streamlit/</id>
+        <link href="https://ay27.com/post/about_streamlit/">
+        </link>
+        <updated>2024-04-07T13:59:07.000Z</updated>
+        <summary type="html"><![CDATA[<p><a href="https://streamlit.io/">https://streamlit.io/</a></p>
+<p>streamlit 库是一个 python 语言的 web app 框架，能够通过简单的代码（无需任何前端基础），快速构建一个带响应式前端的数据展示应用。</p>
+<p>响应式在前端领域很常见，streamlit 的创新在于它的前端组件和 python 代码间也是相互绑定的。去年工作需要，我考虑过如何去做更灵活的前后端数据绑定，但没能做得很好。这让我很好奇他们的实现方式。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p><a href="https://streamlit.io/">https://streamlit.io/</a></p>
+<p>streamlit 库是一个 python 语言的 web app 框架，能够通过简单的代码（无需任何前端基础），快速构建一个带响应式前端的数据展示应用。</p>
+<p>响应式在前端领域很常见，streamlit 的创新在于它的前端组件和 python 代码间也是相互绑定的。去年工作需要，我考虑过如何去做更灵活的前后端数据绑定，但没能做得很好。这让我很好奇他们的实现方式。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PyCharm+Blender开发配置指南]]></title>
+        <id>https://ay27.com/post/pycharm-blender-development-setup/</id>
+        <link href="https://ay27.com/post/pycharm-blender-development-setup/">
+        </link>
+        <updated>2024-02-25T04:19:07.000Z</updated>
+        <summary type="html"><![CDATA[<p>最近需要写比较多的 blender 脚本，奈何在 mac 下没有完整的 pip 安装包，导致在 pycharm 下代码补全总是不行，虽然有 copilot 辅助也能基本搞定，但总是难以了解到很多细节。于是全网搜了下，整理出来下面的方法，以作记录。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>最近需要写比较多的 blender 脚本，奈何在 mac 下没有完整的 pip 安装包，导致在 pycharm 下代码补全总是不行，虽然有 copilot 辅助也能基本搞定，但总是难以了解到很多细节。于是全网搜了下，整理出来下面的方法，以作记录。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[尝试解析 uasset 文件]]></title>
+        <id>https://ay27.com/post/parsing-uasset-file/</id>
+        <link href="https://ay27.com/post/parsing-uasset-file/">
+        </link>
+        <updated>2023-10-18T14:22:58.000Z</updated>
+        <summary type="html"><![CDATA[<p>最近需要解析 UnrealEngine 中的 uasset 文件，希望从中解析得到一些 meta 信息，如 object name，package path，UE version 等信息。unreal 的 python 接口并不能很准确获取到这些信息，且使用有较多限制，如它需要依赖一个完整的项目环境。最关键的是，当我们拿到一个孤立的 uasset 文件时，我们甚至不知道应该把它放置到项目中的哪个位置。而 UE Editor 中，一旦我们把 uasset 文件错误放置，若有其他 uasset 引用了它，轻则闪退，重则卡死。而即使我们位置摆放对了，它所依赖的 reference 若不存在，那么它的载入也会成为问题，比如它是一个 StaticMesh，那它所依赖的 Material 或 MaterialInstanceConstant 缺失时，会默认赋予它一个灰模材质，这并非我们希望的。</p>
+<p>这里的解决办法是直接解析 uasset 文件的二进制内容，尝试从中提取一些需要的信息。</p>
+<p>具体实现代码请见：<a href="https://github.com/ay27/uasset-parser-py">https://github.com/ay27/uasset-parser-py</a></p>
+]]></summary>
+        <content type="html"><![CDATA[<p>最近需要解析 UnrealEngine 中的 uasset 文件，希望从中解析得到一些 meta 信息，如 object name，package path，UE version 等信息。unreal 的 python 接口并不能很准确获取到这些信息，且使用有较多限制，如它需要依赖一个完整的项目环境。最关键的是，当我们拿到一个孤立的 uasset 文件时，我们甚至不知道应该把它放置到项目中的哪个位置。而 UE Editor 中，一旦我们把 uasset 文件错误放置，若有其他 uasset 引用了它，轻则闪退，重则卡死。而即使我们位置摆放对了，它所依赖的 reference 若不存在，那么它的载入也会成为问题，比如它是一个 StaticMesh，那它所依赖的 Material 或 MaterialInstanceConstant 缺失时，会默认赋予它一个灰模材质，这并非我们希望的。</p>
+<p>这里的解决办法是直接解析 uasset 文件的二进制内容，尝试从中提取一些需要的信息。</p>
+<p>具体实现代码请见：<a href="https://github.com/ay27/uasset-parser-py">https://github.com/ay27/uasset-parser-py</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[实现一个数学表达式的解析执行器]]></title>
+        <id>https://ay27.com/post/math-expr-executor/</id>
+        <link href="https://ay27.com/post/math-expr-executor/">
+        </link>
+        <updated>2023-10-13T14:39:43.000Z</updated>
+        <summary type="html"><![CDATA[<p>最近我们在一个项目中实现了一个小型解释器。这个解释器实现了一种简洁的表达式语言，支持常见的数学函数、向量运算和类 jsonpath 语法。整个实现由 Lexer、Parser 和 Executor 组合而成，共同实现了一个符合 LL(1) 文法的表达式语言。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>最近我们在一个项目中实现了一个小型解释器。这个解释器实现了一种简洁的表达式语言，支持常见的数学函数、向量运算和类 jsonpath 语法。整个实现由 Lexer、Parser 和 Executor 组合而成，共同实现了一个符合 LL(1) 文法的表达式语言。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[解决 UnrealEditor 的 D3D11-compatible 问题]]></title>
+        <id>https://ay27.com/post/ue5-d3d11-error/</id>
+        <link href="https://ay27.com/post/ue5-d3d11-error/">
+        </link>
+        <updated>2023-10-08T13:36:38.000Z</updated>
+        <summary type="html"><![CDATA[<p>这篇文章，记录一下在远程无显卡的虚拟 windows 机器上，跑起 UE5 Editor 做材质烘焙任务过程中，遇到的一个 D3D11 不兼容问题。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>这篇文章，记录一下在远程无显卡的虚拟 windows 机器上，跑起 UE5 Editor 做材质烘焙任务过程中，遇到的一个 D3D11 不兼容问题。</p>
+]]></content>
+    </entry>
+</feed>

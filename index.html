@@ -1,0 +1,207 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ay27的个人小站</title>
+<link rel="shortcut icon" href="https://ay27.com/favicon.ico?v=1713533439691">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ay27.com/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="ay27的个人小站 - Atom Feed" href="https://ay27.com/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="温故而知新" />
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://ay27.com">
+  <img class="avatar" src="https://ay27.com/images/avatar.png?v=1713533439691" alt="">
+  </a>
+  <h1 class="site-title">
+    ay27的个人小站
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/ay27" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+    
+        <div class="post-container">
+  
+    <article class="post">
+      <a href="https://ay27.com/post/about_streamlit/">
+        <h2 class="post-title">聊聊streamlit库的设计</h2>
+      </a>
+      <div class="post-info">
+        <span>
+          2024-04-07
+        </span>
+        <span>
+          16 min read
+        </span>
+        
+      </div>
+      
+        <a href="https://ay27.com/post/about_streamlit/" class="post-feature-image" style="background-image: url('https://ay27.com/post-images/about_streamlit.png')">
+        </a>
+      
+      <div class="post-abstract">
+        <p><a href="https://streamlit.io/">https://streamlit.io/</a></p>
+<p>streamlit 库是一个 python 语言的 web app 框架，能够通过简单的代码（无需任何前端基础），快速构建一个带响应式前端的数据展示应用。</p>
+<p>响应式在前端领域很常见，streamlit 的创新在于它的前端组件和 python 代码间也是相互绑定的。去年工作需要，我考虑过如何去做更灵活的前后端数据绑定，但没能做得很好。这让我很好奇他们的实现方式。</p>
+
+      </div>
+      <a href="https://ay27.com/post/about_streamlit/">
+        <h3> >> Read More</h3>
+      </a>
+    </article>
+  
+    <article class="post">
+      <a href="https://ay27.com/post/pycharm-blender-development-setup/">
+        <h2 class="post-title">PyCharm+Blender开发配置指南</h2>
+      </a>
+      <div class="post-info">
+        <span>
+          2024-02-25
+        </span>
+        <span>
+          2 min read
+        </span>
+        
+      </div>
+      
+        <a href="https://ay27.com/post/pycharm-blender-development-setup/" class="post-feature-image" style="background-image: url('https://ay27.com/post-images/pycharm-blender-development-setup.png')">
+        </a>
+      
+      <div class="post-abstract">
+        <p>最近需要写比较多的 blender 脚本，奈何在 mac 下没有完整的 pip 安装包，导致在 pycharm 下代码补全总是不行，虽然有 copilot 辅助也能基本搞定，但总是难以了解到很多细节。于是全网搜了下，整理出来下面的方法，以作记录。</p>
+
+      </div>
+      <a href="https://ay27.com/post/pycharm-blender-development-setup/">
+        <h3> >> Read More</h3>
+      </a>
+    </article>
+  
+    <article class="post">
+      <a href="https://ay27.com/post/parsing-uasset-file/">
+        <h2 class="post-title">尝试解析 uasset 文件</h2>
+      </a>
+      <div class="post-info">
+        <span>
+          2023-10-18
+        </span>
+        <span>
+          5 min read
+        </span>
+        
+      </div>
+      
+        <a href="https://ay27.com/post/parsing-uasset-file/" class="post-feature-image" style="background-image: url('https://ay27.com/post-images/parsing-uasset-file.png')">
+        </a>
+      
+      <div class="post-abstract">
+        <p>最近需要解析 UnrealEngine 中的 uasset 文件，希望从中解析得到一些 meta 信息，如 object name，package path，UE version 等信息。unreal 的 python 接口并不能很准确获取到这些信息，且使用有较多限制，如它需要依赖一个完整的项目环境。最关键的是，当我们拿到一个孤立的 uasset 文件时，我们甚至不知道应该把它放置到项目中的哪个位置。而 UE Editor 中，一旦我们把 uasset 文件错误放置，若有其他 uasset 引用了它，轻则闪退，重则卡死。而即使我们位置摆放对了，它所依赖的 reference 若不存在，那么它的载入也会成为问题，比如它是一个 StaticMesh，那它所依赖的 Material 或 MaterialInstanceConstant 缺失时，会默认赋予它一个灰模材质，这并非我们希望的。</p>
+<p>这里的解决办法是直接解析 uasset 文件的二进制内容，尝试从中提取一些需要的信息。</p>
+<p>具体实现代码请见：<a href="https://github.com/ay27/uasset-parser-py">https://github.com/ay27/uasset-parser-py</a></p>
+
+      </div>
+      <a href="https://ay27.com/post/parsing-uasset-file/">
+        <h3> >> Read More</h3>
+      </a>
+    </article>
+  
+    <article class="post">
+      <a href="https://ay27.com/post/math-expr-executor/">
+        <h2 class="post-title">实现一个数学表达式的解析执行器</h2>
+      </a>
+      <div class="post-info">
+        <span>
+          2023-10-13
+        </span>
+        <span>
+          7 min read
+        </span>
+        
+      </div>
+      
+        <a href="https://ay27.com/post/math-expr-executor/" class="post-feature-image" style="background-image: url('https://ay27.com/post-images/math-expr-executor.jpg')">
+        </a>
+      
+      <div class="post-abstract">
+        <p>最近我们在一个项目中实现了一个小型解释器。这个解释器实现了一种简洁的表达式语言，支持常见的数学函数、向量运算和类 jsonpath 语法。整个实现由 Lexer、Parser 和 Executor 组合而成，共同实现了一个符合 LL(1) 文法的表达式语言。</p>
+
+      </div>
+      <a href="https://ay27.com/post/math-expr-executor/">
+        <h3> >> Read More</h3>
+      </a>
+    </article>
+  
+    <article class="post">
+      <a href="https://ay27.com/post/ue5-d3d11-error/">
+        <h2 class="post-title">解决 UnrealEditor 的 D3D11-compatible 问题</h2>
+      </a>
+      <div class="post-info">
+        <span>
+          2023-10-08
+        </span>
+        <span>
+          1 min read
+        </span>
+        
+      </div>
+      
+        <a href="https://ay27.com/post/ue5-d3d11-error/" class="post-feature-image" style="background-image: url('https://ay27.com/post-images/ue5-d3d11-error.png')">
+        </a>
+      
+      <div class="post-abstract">
+        <p>这篇文章，记录一下在远程无显卡的虚拟 windows 机器上，跑起 UE5 Editor 做材质烘焙任务过程中，遇到的一个 D3D11 不兼容问题。</p>
+
+      </div>
+      <a href="https://ay27.com/post/ue5-d3d11-error/">
+        <h3> >> Read More</h3>
+      </a>
+    </article>
+  
+</div>
+
+    
+        <div class="pagination-container">
+  
+  
+</div>
+
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://ay27.com/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+  </body>
+</html>
